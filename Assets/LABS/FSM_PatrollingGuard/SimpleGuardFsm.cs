@@ -16,6 +16,9 @@ public class SimpleGuardFsm : MonoBehaviour
         Return
     }
     
+    public delegate void SimpleGuardStateChange(SimpleGuardStates newState);
+    public static event SimpleGuardStateChange OnSimpleGuardStateChange;
+    
     //Members
     private SimpleGuardStates m_currentState = SimpleGuardStates.Idle;
     private PlayerController m_playerController;
@@ -47,7 +50,7 @@ public class SimpleGuardFsm : MonoBehaviour
     {
         m_navMeshAgent.speed = patrolSpeed;
         m_currentPatrolPointIndex = FindClosestPatrolPointIndex();
-        ChangeState(SimpleGuardStates.Patrol);
+        ChangeState(SimpleGuardStates.Return);
     }
 
     void Update()
@@ -98,6 +101,7 @@ public class SimpleGuardFsm : MonoBehaviour
     {
         m_currentState = newState;
         print("Entered new state: " + newState);
+        OnSimpleGuardStateChange?.Invoke(newState);
     }
     
     private void DoIdleAction()
@@ -119,6 +123,7 @@ public class SimpleGuardFsm : MonoBehaviour
         if (m_distanceToPlayer < alertDistance)
         {
             ChangeState(SimpleGuardStates.Chase);
+            m_currentPatrolTarget = null;
             return;
         }
         
